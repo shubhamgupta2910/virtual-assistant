@@ -1,0 +1,375 @@
+import sys
+import pyttsx3  # pip install pyttsx3
+import speech_recognition as sr  # pip install speechRecognition
+import datetime
+import wikipedia  # pip install wikipedia
+import webbrowser
+import os
+import requests
+from requests import get
+import smtplib
+import random
+import pyautogui
+import playsound
+import json
+from gtts import gTTS
+from time import ctime
+import re
+import time
+import importlib
+import tkinter as tk
+import subprocess
+import cv2
+import PyPDF2
+import pywhatkit
+import random
+import operator
+from bs4 import BeautifulSoup
+from pywikihow import search_wikihow
+import winsound
+
+engine = pyttsx3.init('sapi5')
+voices = engine.getProperty('voices')
+print(voices)
+engine.setProperty('voice', voices[1].id)
+
+
+
+def speak(audio):
+    engine.say(audio)
+    print(audio)
+    engine.runAndWait()
+
+
+def wishMe():
+    hour = int(datetime.datetime.now().hour)
+    tt = time.strftime("%I:%M %p")
+    if hour >= 0 and hour < 12:
+        speak(f"Good Morning, its {tt}")
+    elif hour >= 12 and hour < 18:
+        speak(f"Good Afternoon, its {tt}")
+    else:
+        speak(f"Good Evening, its {tt}")
+
+    speak("verification successful")
+    speak("hello srishty. My name is  ALITA . i am your assistant")
+    speak("how may i help you")
+
+
+def takeCommand():
+    # It takes microphone input from the user and returns string output
+
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        r.pause_threshold = 1
+        # r.adjust_for_ambient_noise(source)
+        audio = r.listen(source)
+
+    try:
+        print("Recognizing...")
+        query = r.recognize_google(audio, language='en-in')
+        print(f"User said: {query}")
+
+    except Exception as e:
+        # speak("Say that again please...")
+        return "none"
+    query = query.lower()
+    return query
+
+
+
+
+def sendEmail(to, content):
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.ehlo()
+    server.starttls()
+    server.login('urdnotwrex968@gmail.com', 'lykanhypersport!')
+    server.sendmail('urdnotwrex968@gmail.com', to, content)
+    server.close()
+
+
+def pdf_reader():
+    book = open('final synopsis-Virtual Assistant.pdf', 'rb')
+    pdfReader = PyPDF2.PdfFileReader(book)
+    pages = pdfReader.numPages
+    speak(f"Total numbers of pages in this book {pages} ")
+    speak("sir please enter page number:")
+    pg = int(input("please enter the page number:"))
+    page = pdfReader.getPage(pg)
+    text = page.extractText()
+    speak(text)
+
+def TaskExecution():
+    wishMe()
+    while True:
+        
+        query = takeCommand()
+
+        app_string = ["open word", "open powerpoint", "open excel"]
+        app_link = [r'\WINWORD.EXE', r'\POWERPNT.EXE', r'\EXCEL.EXE']
+        app_dest = r'C:\Program Files\Microsoft Office\root\Office16'
+
+        query = takeCommand().lower()
+        results = ''
+
+        # Logic for executing tasks based on query
+        if 'wikipedia' in query:
+            speak('Searching Wikipedia...')
+            query = query.replace("wikipedia", "")
+            results = wikipedia.summary(query, sentences=2)
+            speak("According to Wikipedia")
+            print(results)
+            speak(results)
+
+        if app_string[0] in query:
+            os.startfile(app_dest + app_link[0])
+
+            speak("Microsoft office Word is opening now")
+
+        if app_string[1] in query:
+            os.startfile(app_dest + app_link[1])
+            speak("Microsoft office PowerPoint is opening now")
+
+        if app_string[2] in query:
+            os.startfile(app_dest + app_link[2])
+            speak("Microsoft office Excel is opening now")
+
+        if 'news' in query or 'News' in query or 'NEWS' in query:
+            news = webbrowser.open_new_tab("https://timesofindia.indiatimes.com/city/delhi")
+            speak('Here are some headlines from the Times of India, Happy reading')
+            time.sleep(6)
+
+        if 'cricket' in query:
+            news = webbrowser.open_new_tab("cricbuzz.com")
+            speak('This is live news from cricbuzz')
+            time.sleep(6)
+
+        if 'corona cases' in query:
+            news = webbrowser.open_new_tab("https://www.worldometers.info/coronavirus/")
+            speak('Here are the latest covid-19 numbers')
+            time.sleep(6)
+
+        elif 'open whatsapp' in query:
+            os.startfile(r"C:\Users\SG\AppData\Local\WhatsApp\WhatsApp.exe")
+
+        elif 'calculator' in query:
+            os.system('start calc')
+
+        elif 'notepad' in query:
+            npath = "C:\\Windows\\system32\\notepad.exe"
+            os.startfile(npath)
+
+        elif "close notepad" in query:
+            speak("okay sir, closing notepad")
+            os.system("taskkill /f /im notepad.exe")
+
+        elif 'open stack' in query:
+            chrome_path = '"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" %s'
+            webbrowser.get(chrome_path).open("https://stackoverflow.com/")
+
+        elif 'song' in query:
+            chrome_path = '"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" %s'
+            webbrowser.get(chrome_path).open('gaana.com')
+
+        elif 'play music' in query:
+            music_dir = 'C:\\Users\SG\Desktop\songs'
+            songs = os.listdir(music_dir)
+            # rd = random.choice(songs)
+            for song in songs:
+                if song.endswith('.mp3'):
+                    os.startfile(os.path.join(music_dir, song))
+
+        elif 'what is the time' in query:
+            strTime = datetime.datetime.now().strftime("%H:%M:%S")
+            speak(f"Sir, the time is {strTime}")
+
+        elif 'volume up' in query:
+            pyautogui.press("volumeup")
+
+        elif 'volume down' in query:
+            pyautogui.press("volumedown")
+
+        elif 'volume mute' in query:
+            pyautogui.press("volumemute")
+
+        elif 'email' in query or 'send mail to abhishek' in query:
+            try:
+                speak("What should I say?")
+                content = takeCommand().lower()
+                to = "abhi999312@gmail.com"
+                sendEmail(to, content)
+                speak("Email has been sent to abhishek!")
+            except Exception as e:
+                print(e)
+                speak("Sorry my friend . I am not able to send this email")
+
+        elif 'open command prompt' in query:
+            os.system('start cmd')
+
+        elif 'open camera' in query:
+            cap = cv2.VideoCapture(0)
+            while True:
+                ret, img = cap.read()
+                cv2.imshow('webcam', img)
+                k = cv2.waitKey(50)
+                if k == 27:
+                    break;
+            cap.release()
+            cv2.destroyAllWindows()
+
+
+        elif 'ip address' in query:
+            ip = get('http://api.ipify.org').text
+            speak(f"your IP address is {ip}")
+
+        elif "where i am" in query or "where we are" in query:
+            speak("wait sir, let me check")
+            try:
+                ipADD = requests.get('http://api.ipify.org').text
+                print(ipADD)
+                url = 'http://get.geojs.io/v1/ip/geo/' + ipADD + '.json'
+                geo_requests = requests.get(url)
+                geo_data = geo_requests.json()
+                city = geo_data['city']
+                country = geo_data['country']
+                speak(f"sir i am not sure, but i think we are in {city} city of {country} country")
+            except Exception as e:
+                speak("sorry sir, due to network issue i am not able to find where we are.")
+                pass
+
+        elif 'open youtube' in query or 'open YouTube' in query:
+            chrome_path = '"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" %s'
+            webbrowser.get(chrome_path).open('www.youtube.com')
+
+        elif 'open facebook' in query:
+            chrome_path = '"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" %s'
+            webbrowser.get(chrome_path).open('www.facebook.com')
+
+        elif 'open my mail' in query:
+            chrome_path = '"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" %s'
+            webbrowser.get(chrome_path).open('https://mail.google.com/mail/u/0/?tab=rm&ogbl#inbox')
+
+        elif 'open google' in query or 'open Google' in query :
+            speak('sir, what should i search on google')
+            cm = takeCommand().lower()
+            webbrowser.open(f"{cm}")
+
+        elif 'send message' in query:
+            pywhatkit.sendwhatmsg("+917291919621", "this is testing message", 1, 27)
+            time.sleep(120)
+            speak("message has been sent")
+
+        elif 'play video on youtube' in query or 'play video on YouTube' in query:
+            speak('sir, what should i search on youtube')
+            cm = takeCommand().lower()
+            pywhatkit.playonyt(f"{cm}")
+
+        elif "shut down" in query:
+            os.system("shutdown /s /t 5")
+        elif "restart system" in query:
+            os.system("restart /r /t 5")
+
+
+
+        elif "take screenshot" in query or "take a screenshot" in query:
+            speak("sir, please tell me the name for this screenshot file")
+            name = takeCommand().lower()
+            speak("please sir wait for few seconds")
+            img = pyautogui.screenshot()
+            img.save(f"{name}.jpg")
+            speak("i am done sir, screenshot is saved")
+
+        elif "read pdf" in query:
+            pdf_reader()
+
+        elif "temperature" in query:
+            search = "temperature in delhi"
+            url = f"http://www.google.com/search?q={search}"
+            r = requests.get(url)
+            data = BeautifulSoup(r.text, "html.parser")
+            temp = data.find("div", class_="BNeawe").text
+            speak(f"current {search} is {temp}")
+
+        elif "alarm" in query:
+            speak("sir please tell me the time to set alarm. for example, set alarm 5:30 am")
+            tt = takeCommand()   # set alarm 5:30 a.m.
+            tt = tt.replace("set alarm ", "") #5:30 a.m.
+            tt = tt.replace(".","") #5:30 am
+            tt = tt.upper() #5:30 AM
+            import MyAlarm
+            MyAlarm.alarm(tt)
+
+
+        elif "activate how to do mode" in query:
+            # from pywikihow import search_wikihow
+            speak("please tell me what you want to know")
+            how = takeCommand()
+            max_results = 1
+            how_to = search_wikihow(how, max_results)
+            assert len(how_to) == 1
+            how_to[0].print()
+            speak(how_to[0].summary)
+
+        elif "do some calculations" in query or "can you calculate" in query:
+            r = sr.Recognizer()
+            with sr.Microphone() as source:
+                speak("say what you want to calculate, example: 3 plus 3")
+                print("listening....")
+                r.adjust_for_ambient_noise(source)
+                audio = r.listen(source)
+            my_string = r.recognize_google(audio)
+            print(my_string)
+
+            def get_operator_fn(op):
+                return {
+                    '+': operator.add,  # plus
+                    '-': operator.sub,  # minus
+                    'x': operator.mul,  # multiplied
+                    'divided': operator.__truediv__,  # divided
+                }[op]
+
+            def eval_binary_expr(op1, oper, op2):  # 5 plus 8
+                op1, op2 = int(op1), int(op2)
+                return get_operator_fn(oper)(op1, op2)
+
+            speak("your result is")
+            speak(eval_binary_expr(*(my_string.split())))
+
+        elif "hello" in query or "hi alita" in query:
+            speak("hello sir, may i help you something")
+
+        elif "how are you" in query:
+            speak("i am fine sir, what about you")
+
+        elif "i am good" in query or "fine" in query:
+            speak("good to know sir")
+
+        elif "thanks" in query or "thank you" in query:
+            speak("it's my pleasure sir")
+            sys.exit()
+
+
+        elif "no thanks" in query or "you can sleep now" in query:
+            speak("thanks for using me sir")
+            sys.exit()
+
+
+if __name__ == "__main__":
+    TaskExecution()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
